@@ -11,7 +11,7 @@ import copy
 import datetime
 import os
 from datetime import date
-from typing import List, Dict
+from typing import List, Dict, Union
 
 import requests
 from PyInquirer import prompt, style_from_dict, Token, Separator
@@ -34,7 +34,7 @@ DEFAULT_STYLE = style_from_dict(
 BACK_CHOICE = "<< უკან დაბრუნება"
 
 
-def __step_1():
+def __step_1() -> Dict[str, str]:
     services = {
         "Pfizer": "efc7f5d4-f4b1-4095-ad53-717389ea8258",
         "Sinovac": "f0a99555-7873-4b61-9dbc-545622278233",
@@ -56,7 +56,7 @@ def __step_1():
     return {"service": services[service]}
 
 
-def __step_2(service):
+def __step_2(service: str) -> Union[Dict[str, Union[str, Dict[str, str]]], None]:
     regions = {
         "აჭარა": "31520d88-870e-485e-a833-5ca9e20e84fa",
         "გურია": "27428de4-bb76-47f2-bfac-26700623a05d",
@@ -100,7 +100,9 @@ def __step_2(service):
     }
 
 
-def __step_3(service, region, municipalities):
+def __step_3(
+    service: str, region: str, municipalities: Dict[str, str]
+) -> Union[Dict[str, Union[str, Dict[str, str]]], None]:
     answers = prompt(
         {
             "type": "list",
@@ -131,7 +133,9 @@ def __step_3(service, region, municipalities):
     }
 
 
-def __step_4(region, service, branches):
+def __step_4(
+    region: str, service: str, branches: Dict[str, str]
+) -> Union[Dict[str, Dict[str, List]], None]:
     answers = prompt(
         {
             "type": "list",
@@ -166,7 +170,7 @@ def __step_4(region, service, branches):
     return {"rooms": rooms}
 
 
-def __step_5(rooms):
+def __step_5(rooms: Dict[str, List]) -> Union[Dict[str, List], None]:
     answers = prompt(
         {
             "type": "list",
@@ -188,7 +192,7 @@ def __step_5(rooms):
     return {"dates": dates}
 
 
-def __step_6(dates):
+def __step_6(dates: List) -> bool:
     _, columns = os.popen("stty size", "r").read().split()
     header = ["თარიღი", "დღე", "თავისუფალი დროები"]
     table = PrettyTable(
@@ -213,7 +217,7 @@ def __step_6(dates):
     return not answers.get("repeat")
 
 
-def __print_banner():
+def __print_banner() -> None:
     print("__     __             _             _   _             ")
     print(r"\ \   / /_ _  ___ ___(_)_ __   __ _| |_(_) ___  _ __  ")
     print(r" \ \ / / _` |/ __/ __| | '_ \ / _` | __| |/ _ \| '_ \ ")
@@ -227,7 +231,7 @@ def __dict_to_choices(raw: Dict[str, any], navigation: bool = True) -> List[str]
     return choices + [Separator("-" * 18), BACK_CHOICE] if navigation else choices
 
 
-def __process():
+def __process() -> int:
     steps = [
         [__step_1, {}],
         [__step_2, {}],
