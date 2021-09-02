@@ -1,0 +1,3 @@
+prettytable>=2.2
+PyInquirer>=1.0
+requests>=2.26
