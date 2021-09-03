@@ -5,7 +5,6 @@ Get COVID-19 vaccination schedules from booking.moh.gov.ge in the CLI.
 ![PyPI](https://img.shields.io/pypi/v/vaccination)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/vaccination)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/vaccination)
-![PyPI - Status](https://img.shields.io/pypi/status/vaccination)
 ![PyPI - License](https://img.shields.io/pypi/l/vaccination)
 
 [![asciicast](https://asciinema.org/a/433672.svg)](https://asciinema.org/a/433672)
