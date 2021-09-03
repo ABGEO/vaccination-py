@@ -54,23 +54,22 @@ def __step_1() -> Dict[str, str]:
 
     service = answers.get("service")
 
-    return {"service": services[service]}
+    regions_response = requests.get(
+        f"{BASE_URL}/CommonData/GetRegions",
+        {"serviceId": services[service], "onlyFree": True},
+        headers={"SecurityNumber": __get_security_number()},
+    )
+
+    regions = {}
+    for region in regions_response.json():
+        regions[region["geoName"]] = region["id"]
+
+    return {"service": services[service], "regions": regions}
 
 
-def __step_2(service: str) -> Union[Dict[str, Union[str, Dict[str, str]]], None]:
-    regions = {
-        "აჭარა": "31520d88-870e-485e-a833-5ca9e20e84fa",
-        "გურია": "27428de4-bb76-47f2-bfac-26700623a05d",
-        "თბილისი": "5d129a50-30e9-4b10-8d4d-3febb32ec32c",
-        "იმერეთი": "09c1e04c-c664-4252-a30a-2a71ba72c2e2",
-        "კახეთი": "d1e285b5-5b60-42c6-9bc2-ac7646a9c96a",
-        "მცხეთა-მთიანეთი": "b5a01ce4-bbfc-4b7e-a519-ba11dd7146bb",
-        "რაჭა-ლეჩხუმი და ქვემო სვანეთი": "6d893d1f-3851-4d80-b7fc-020179c8a4c0",
-        "სამეგრელო და ზემო სვანეთი": "a2a56af7-2f62-4ffa-aa56-038328bd5b32",
-        "სამცხე-ჯავახეთი": "acecd83d-fb22-44f9-b69d-3333aceb79a6",
-        "ქვემო ქართლი": "f2cf4fc9-7037-4c56-8db7-bd9a6ddadd8a",
-        "შიდა ქართლი": "ae3b6e33-6cd7-4b24-bf74-865cfabc2839",
-    }
+def __step_2(
+    service: str, regions: Dict[str, str]
+) -> Union[Dict[str, Union[str, Dict[str, str]]], None]:
     answers = prompt(
         {
             "type": "list",
