@@ -9,6 +9,7 @@ file that was distributed with this source code.
 
 import copy
 import datetime
+import json
 import os
 from datetime import date
 from typing import List, Dict, Union
@@ -35,6 +36,20 @@ BACK_CHOICE = "<< უკან დაბრუნება"
 SECURITY_CODES = []
 
 
+def __get_available_quantities() -> Dict[str, int]:
+    quantities_response = requests.get(
+        f"{BASE_URL}/Public/GetAvailableQuantities",
+        headers={"SecurityNumber": __get_security_number()},
+    )
+
+    quantities = {}
+    _quantities = json.loads(quantities_response.json())
+    for service, quantity in _quantities.items():
+        quantities[service.lower()] = quantity
+
+    return quantities
+
+
 def __get_service_types(path: str) -> List[Dict[str, str]]:
     base_url = BASE_URL.replace("/abc/API/", f"/{path}/API/")
 
@@ -47,11 +62,13 @@ def __get_service_types(path: str) -> List[Dict[str, str]]:
 
 
 def __step_1() -> Dict[str, str]:
+    quantities = __get_available_quantities()
     services = {}
     for path in ["abc", "def"]:
         for service in __get_service_types(path):
             key = service["name"]
             key = key[key.find("(") + 1 : key.find(")")]
+            key += f" ({quantities[key.lower()]:,})"
             services[key] = service["id"]
 
     answers = prompt(
