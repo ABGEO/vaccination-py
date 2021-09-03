@@ -5,7 +5,7 @@ on:
     types: [created]
 
 jobs:
-  deploy:
+  publish:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -19,10 +19,12 @@ jobs:
     - name: Check Package
       run: |
         python setup.py check
-    - name: Build and Publish Package
+    - name: Build Package
+      run: |
+        python setup.py sdist
+    - name: Publish Package
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        python setup.py sdist
         twine upload dist/*
