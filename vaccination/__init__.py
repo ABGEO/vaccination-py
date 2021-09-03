@@ -13,5 +13,5 @@ __copyright__ = "(c) 2021 Temuri Takalandze"
 __email__ = "me@abgeo.dev"
 __credits__ = ["Temuri Takalandze"]
 __license__ = "MIT"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __status__ = "Stable"
