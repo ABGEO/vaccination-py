@@ -35,13 +35,25 @@ BACK_CHOICE = "<< უკან დაბრუნება"
 SECURITY_CODES = []
 
 
+def __get_service_types(path: str) -> List[Dict[str, str]]:
+    base_url = BASE_URL.replace("/abc/API/", f"/{path}/API/")
+
+    services_response = requests.get(
+        f"{base_url}/CommonData/GetServicesTypes",
+        headers={"SecurityNumber": __get_security_number()},
+    )
+
+    return services_response.json()
+
+
 def __step_1() -> Dict[str, str]:
-    services = {
-        "Pfizer": "efc7f5d4-f4b1-4095-ad53-717389ea8258",
-        "Sinovac": "f0a99555-7873-4b61-9dbc-545622278233",
-        "Sinopharm": "d1eef49b-00b9-4760-9525-6100c168e642",
-        "AstraZeneca": "4bb6c283-3afb-436c-9974-6730cd2a18bd",
-    }
+    services = {}
+    for path in ["abc", "def"]:
+        for service in __get_service_types(path):
+            key = service["name"]
+            key = key[key.find("(") + 1 : key.find(")")]
+            services[key] = service["id"]
+
     answers = prompt(
         {
             "type": "list",
