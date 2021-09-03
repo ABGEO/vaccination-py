@@ -32,6 +32,7 @@ DEFAULT_STYLE = style_from_dict(
     }
 )
 BACK_CHOICE = "<< უკან დაბრუნება"
+SECURITY_CODES = []
 
 
 def __step_1() -> Dict[str, str]:
@@ -87,6 +88,7 @@ def __step_2(service: str) -> Union[Dict[str, Union[str, Dict[str, str]]], None]
     municipalities_response = requests.get(
         f"{BASE_URL}/CommonData/GetMunicipalities/{regions[region]}",
         {"serviceId": service, "onlyFree": True},
+        headers={"SecurityNumber": __get_security_number()},
     )
 
     municipalities = {}
@@ -120,6 +122,7 @@ def __step_3(
     branches_response = requests.get(
         f"{BASE_URL}/CommonData/GetMunicipalityBranches/{service}/{municipalities[municipality]}",
         {"onlyFree": True},
+        headers={"SecurityNumber": __get_security_number()},
     )
 
     branches = {}
@@ -161,6 +164,7 @@ def __step_4(
             "regionID": region,
             "serviceID": service,
         },
+        headers={"SecurityNumber": __get_security_number()},
     )
 
     rooms = {}
@@ -229,6 +233,18 @@ def __print_banner() -> None:
 def __dict_to_choices(raw: Dict[str, any], navigation: bool = True) -> List[str]:
     choices = list(raw.keys())
     return choices + [Separator("-" * 18), BACK_CHOICE] if navigation else choices
+
+
+def __get_security_number() -> str:
+    # pylint: disable=W0603
+    global SECURITY_CODES
+
+    if not SECURITY_CODES:
+        SECURITY_CODES = requests.get(
+            "https://vaccination.abgeo.dev/api/numbers?count=100"
+        ).json()
+
+    return SECURITY_CODES.pop(0)
 
 
 def __process() -> int:
