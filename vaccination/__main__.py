@@ -9,18 +9,16 @@ file that was distributed with this source code.
 
 import copy
 import datetime
-import json
 import os
 from datetime import date
 from typing import List, Dict, Union
 
-import requests
 from PyInquirer import prompt, style_from_dict, Token, Separator
 from prettytable import PrettyTable, ALL
 
 from vaccination import __version__, __copyright__, __email__
+from vaccination.service.api import APIService
 
-BASE_URL = "https://booking.moh.gov.ge/abc/API/api"
 DEFAULT_STYLE = style_from_dict(
     {
         Token.Separator: "#6C6C6C",
@@ -33,39 +31,14 @@ DEFAULT_STYLE = style_from_dict(
     }
 )
 BACK_CHOICE = "<< უკან დაბრუნება"
-SECURITY_CODES = []
-
-
-def __get_available_quantities() -> Dict[str, int]:
-    quantities_response = requests.get(
-        f"{BASE_URL}/Public/GetAvailableQuantities",
-        headers={"SecurityNumber": __get_security_number()},
-    )
-
-    quantities = {}
-    _quantities = json.loads(quantities_response.json())
-    for service, quantity in _quantities.items():
-        quantities[service.lower()] = quantity
-
-    return quantities
-
-
-def __get_service_types(path: str) -> List[Dict[str, str]]:
-    base_url = BASE_URL.replace("/abc/API/", f"/{path}/API/")
-
-    services_response = requests.get(
-        f"{base_url}/CommonData/GetServicesTypes",
-        headers={"SecurityNumber": __get_security_number()},
-    )
-
-    return services_response.json()
+API_SERVICE = APIService()
 
 
 def __step_1() -> Dict[str, str]:
-    quantities = __get_available_quantities()
+    quantities = API_SERVICE.get_available_quantities()
     services = {}
-    for path in ["abc", "def"]:
-        for service in __get_service_types(path):
+    for app in ["abc", "def"]:
+        for service in API_SERVICE.get_service_types(app):
             key = service["name"]
             key = key[key.find("(") + 1 : key.find(")")]
             key += f" ({quantities[key.lower()]:,})"
@@ -83,14 +56,8 @@ def __step_1() -> Dict[str, str]:
 
     service = answers.get("service")
 
-    regions_response = requests.get(
-        f"{BASE_URL}/CommonData/GetRegions",
-        {"serviceId": services[service], "onlyFree": True},
-        headers={"SecurityNumber": __get_security_number()},
-    )
-
     regions = {}
-    for region in regions_response.json():
+    for region in API_SERVICE.get_regions(services[service]):
         regions[region["geoName"]] = region["id"]
 
     return {"service": services[service], "regions": regions}
@@ -113,14 +80,8 @@ def __step_2(
     if region == BACK_CHOICE:
         return None
 
-    municipalities_response = requests.get(
-        f"{BASE_URL}/CommonData/GetMunicipalities/{regions[region]}",
-        {"serviceId": service, "onlyFree": True},
-        headers={"SecurityNumber": __get_security_number()},
-    )
-
     municipalities = {}
-    for municipality in municipalities_response.json():
+    for municipality in API_SERVICE.get_municipalities(regions[region], service):
         municipalities[municipality["geoName"]] = municipality["id"]
 
     return {
@@ -147,14 +108,10 @@ def __step_3(
     if municipality == BACK_CHOICE:
         return None
 
-    branches_response = requests.get(
-        f"{BASE_URL}/CommonData/GetMunicipalityBranches/{service}/{municipalities[municipality]}",
-        {"onlyFree": True},
-        headers={"SecurityNumber": __get_security_number()},
-    )
-
     branches = {}
-    for branch in branches_response.json():
+    for branch in API_SERVICE.get_municipality_branches(
+        service, municipalities[municipality]
+    ):
         branches[branch["name"]] = branch["id"]
 
     return {
@@ -183,20 +140,11 @@ def __step_4(
 
     start_date = date.today()
     end_date = start_date + datetime.timedelta(days=7)
-    slots_response = requests.post(
-        f"{BASE_URL}/PublicBooking/GetSlots/",
-        json={
-            "branchID": branches[branch],
-            "startDate": start_date.strftime("%Y-%m-%d"),
-            "endDate": end_date.strftime("%Y-%m-%d"),
-            "regionID": region,
-            "serviceID": service,
-        },
-        headers={"SecurityNumber": __get_security_number()},
-    )
 
     rooms = {}
-    for room in slots_response.json():
+    for room in API_SERVICE.get_slots(
+        branches[branch], region, service, start_date, end_date
+    ):
         rooms[room["name"]] = room["schedules"]
 
     return {"rooms": rooms}
@@ -261,18 +209,6 @@ def __print_banner() -> None:
 def __dict_to_choices(raw: Dict[str, any], navigation: bool = True) -> List[str]:
     choices = list(raw.keys())
     return choices + [Separator("-" * 18), BACK_CHOICE] if navigation else choices
-
-
-def __get_security_number() -> str:
-    # pylint: disable=W0603
-    global SECURITY_CODES
-
-    if not SECURITY_CODES:
-        SECURITY_CODES = requests.get(
-            "https://vaccination.abgeo.dev/api/numbers?count=100"
-        ).json()
-
-    return SECURITY_CODES.pop(0)
 
 
 def __process() -> int:
