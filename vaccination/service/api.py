@@ -73,11 +73,12 @@ class APIService:
         path: str,
         params: Dict[str, any] = None,
         data: Dict[str, any] = None,
-        secure: bool = True,
     ) -> Response:
-        kwargs = {"headers": {}}
-        if secure:
-            kwargs["headers"]["SecurityNumber"] = self.__get_security_number()
+        kwargs = {
+            "headers": {
+                "SecurityNumber": self.__get_security_number(),
+            },
+        }
 
         if params:
             kwargs["params"] = params
@@ -87,17 +88,11 @@ class APIService:
 
         return requests.request(method, self.__compose_url(app, path), **kwargs)
 
-    def __get(
-        self, app: str, path: str, params: Dict[str, any] = None, secure: bool = True
-    ) -> ResponseData:
-        return self.__make_request(
-            "get", app, path, params=params, secure=secure
-        ).json()
+    def __get(self, app: str, path: str, params: Dict[str, any] = None) -> ResponseData:
+        return self.__make_request("get", app, path, params=params).json()
 
-    def __post(
-        self, app: str, path: str, data: Dict[str, any] = None, secure: bool = True
-    ) -> ResponseData:
-        return self.__make_request("post", app, path, data=data, secure=secure).json()
+    def __post(self, app: str, path: str, data: Dict[str, any] = None) -> ResponseData:
+        return self.__make_request("post", app, path, data=data).json()
 
     def get_available_quantities(self, app: str = "def") -> Dict[str, int]:
         """
@@ -107,7 +102,7 @@ class APIService:
         :return: Endpoint response.
         """
 
-        _quantities = self.__get(app, "/Public/GetAvailableQuantities", secure=False)
+        _quantities = self.__get(app, "/Public/GetAvailableQuantities")
         _quantities = json.loads(_quantities)
         quantities = {}
         for service, quantity in _quantities.items():
