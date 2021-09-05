@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [1.0.0](https://github.com/ABGEO/vaccination-py/compare/v0.2.1...v1.0.0) (2021-09-05)
+
+### Features
+
+* add available quantity to the services ([bc31c60](https://github.com/ABGEO/vaccination-py/commit/bc31c60785e234cdd0c22473b9002adeae79ae31))
+* implement request retry functionality ([010a462](https://github.com/ABGEO/vaccination-py/commit/010a46253770a584ee29db021cd6310e8b7c07fb))
+
 ## [0.2.1](https://github.com/ABGEO/vaccination-py/compare/v0.2.0...v0.2.1) (2021-09-03)
 
 ### Bug Fixes
