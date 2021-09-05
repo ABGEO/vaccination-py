@@ -20,6 +20,32 @@ from requests.models import Response
 ResponseData = Union[str, List, Dict]
 
 
+def retry_request(times):
+    """
+    Request Retry Decorator.
+
+    :param times: The number of times to repeat the wrapped function/method.
+    :return:
+    """
+
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            attempt = 0
+            while attempt < times:
+                response = function(*args, **kwargs)
+                if response.status_code == 404:
+                    attempt += 1
+                    continue
+
+                return response
+
+            return function(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
 class APIService:
     """
     Service for working with the API.
@@ -39,6 +65,7 @@ class APIService:
     def __compose_url(self, app: str, path: str) -> str:
         return Template(self.url_template).substitute(app=app, path=path)
 
+    @retry_request(times=20)
     def __make_request(
         self,
         method: str,
