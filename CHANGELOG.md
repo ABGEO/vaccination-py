@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [1.1.0](https://github.com/ABGEO/vaccination-py/compare/v1.0.0...v1.1.0) (2021-09-16)
+
+### Features
+
+* add feature for checking lotto.ges results ([e0fd4fb](https://github.com/ABGEO/vaccination-py/commit/e0fd4fb24948d1a5bfb61322ff23f8f33e36c162))
+
 ## [1.0.0](https://github.com/ABGEO/vaccination-py/compare/v0.2.1...v1.0.0) (2021-09-05)
 
 ### Features
