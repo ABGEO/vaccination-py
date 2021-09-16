@@ -1,5 +1,5 @@
 """
-This module contains the API service.
+This module contains the API service for working with booking.moh.gov.ge's API.
 
 This file is part of the vaccination.py.
 
@@ -11,48 +11,25 @@ file that was distributed with this source code.
 
 import json
 from datetime import date
-from string import Template
 from typing import Dict, Union, List
 
 import requests
 from requests.models import Response
 
-ResponseData = Union[str, List, Dict]
+from vaccination.service.api.base import BaseAPIService
 
 
-def retry_request(times):
+class BookingAPIService(BaseAPIService):
     """
-    Request Retry Decorator.
-
-    :param times: The number of times to repeat the wrapped function/method.
-    :return:
-    """
-
-    def decorator(function):
-        def wrapper(*args, **kwargs):
-            attempt = 0
-            while attempt < times:
-                response = function(*args, **kwargs)
-                if response.status_code == 404:
-                    attempt += 1
-                    continue
-
-                return response
-
-            return function(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-class APIService:
-    """
-    Service for working with the API.
+    Service for working with the booking.moh.gov.ge's API.
     """
 
     url_template = "https://booking.moh.gov.ge/$app/API/api/$path"
     security_numbers = []
+
+    def _make_request(self, method: str, **kwargs) -> Response:
+        kwargs["headers"] = {"SecurityNumber": self.__get_security_number()}
+        return super()._make_request(method, **kwargs)
 
     def __get_security_number(self) -> str:
         if not self.security_numbers:
@@ -62,38 +39,6 @@ class APIService:
 
         return self.security_numbers.pop(0)
 
-    def __compose_url(self, app: str, path: str) -> str:
-        return Template(self.url_template).substitute(app=app, path=path)
-
-    @retry_request(times=20)
-    def __make_request(
-        self,
-        method: str,
-        app: str,
-        path: str,
-        params: Dict[str, any] = None,
-        data: Dict[str, any] = None,
-    ) -> Response:
-        kwargs = {
-            "headers": {
-                "SecurityNumber": self.__get_security_number(),
-            },
-        }
-
-        if params:
-            kwargs["params"] = params
-
-        if data:
-            kwargs["json"] = data
-
-        return requests.request(method, self.__compose_url(app, path), **kwargs)
-
-    def __get(self, app: str, path: str, params: Dict[str, any] = None) -> ResponseData:
-        return self.__make_request("get", app, path, params=params).json()
-
-    def __post(self, app: str, path: str, data: Dict[str, any] = None) -> ResponseData:
-        return self.__make_request("post", app, path, data=data).json()
-
     def get_available_quantities(self, app: str = "def") -> Dict[str, int]:
         """
         Make GET request to the "/Public/GetAvailableQuantities" endpoint.
@@ -102,7 +47,9 @@ class APIService:
         :return: Endpoint response.
         """
 
-        _quantities = self.__get(app, "/Public/GetAvailableQuantities")
+        _quantities = self._get(
+            url={"app": app, "path": "/Public/GetAvailableQuantities"}
+        )
         _quantities = json.loads(_quantities)
         quantities = {}
         for service, quantity in _quantities.items():
@@ -118,7 +65,7 @@ class APIService:
         :return: Endpoint response.
         """
 
-        return self.__get(app, "/CommonData/GetServicesTypes")
+        return self._get(url={"app": app, "path": "/CommonData/GetServicesTypes"})
 
     def get_regions(
         self, service: str, only_free: bool = True, app: str = "def"
@@ -132,8 +79,9 @@ class APIService:
         :return: Endpoint response.
         """
 
-        return self.__get(
-            app, "/CommonData/GetRegions", {"serviceId": service, "onlyFree": only_free}
+        return self._get(
+            url={"app": app, "path": "/CommonData/GetRegions"},
+            data={"serviceId": service, "onlyFree": only_free},
         )
 
     def get_municipalities(
@@ -149,10 +97,9 @@ class APIService:
         :return: Endpoint response.
         """
 
-        return self.__get(
-            app,
-            f"/CommonData/GetMunicipalities/{region}",
-            {"serviceId": service, "onlyFree": only_free},
+        return self._get(
+            url={"app": app, "path": f"/CommonData/GetMunicipalities/{region}"},
+            data={"serviceId": service, "onlyFree": only_free},
         )
 
     def get_municipality_branches(
@@ -169,10 +116,12 @@ class APIService:
         :return: Endpoint response.
         """
 
-        return self.__get(
-            app,
-            f"/CommonData/GetMunicipalityBranches/{service}/{municipality}",
-            {"onlyFree": only_free},
+        return self._get(
+            url={
+                "app": app,
+                "path": f"/CommonData/GetMunicipalityBranches/{service}/{municipality}",
+            },
+            data={"onlyFree": only_free},
         )
 
     def get_slots(
@@ -196,10 +145,9 @@ class APIService:
         :return: Endpoint response.
         """
 
-        return self.__post(
-            app,
-            "/PublicBooking/GetSlots",
-            {
+        return self._post(
+            url={"app": app, "path": "/PublicBooking/GetSlots"},
+            json={
                 "branchID": branch,
                 "startDate": start_date.strftime("%Y-%m-%d"),
                 "endDate": end_date.strftime("%Y-%m-%d"),

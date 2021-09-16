@@ -1,5 +1,5 @@
 """
-Package for services.
+Package for API services.
 
 This file is part of the vaccination.py.
 

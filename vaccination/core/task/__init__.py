@@ -1,5 +1,5 @@
 """
-Package for services.
+CLI tasks package.
 
 This file is part of the vaccination.py.
 

@@ -27,7 +27,7 @@ def main() -> int:
     """
 
     __print_banner()
-    return App().run()
+    return App.run()
 
 
 if __name__ == "__main__":
