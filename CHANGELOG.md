@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [1.2.0](https://github.com/ABGEO/vaccination-py/compare/v1.1.0...v1.2.0) (2021-09-23)
+
+### Features
+
+* add booking checking feature ([07727ef](https://github.com/ABGEO/vaccination-py/commit/07727ef0c5e27cd5398089001af7b98a7471f89d))
+
 ## [1.1.0](https://github.com/ABGEO/vaccination-py/compare/v1.0.0...v1.1.0) (2021-09-16)
 
 ### Features
