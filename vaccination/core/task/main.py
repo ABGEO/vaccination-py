@@ -14,6 +14,7 @@ from PyInquirer import prompt
 from vaccination.core.task.base import BaseTask
 from vaccination.core.task.lotto import LottoTask
 from vaccination.core.task.vaccination import VaccinationTask
+from vaccination.core.task.vaccination_check import VaccinationCheckTask
 
 
 class MainTask(BaseTask):
@@ -30,6 +31,7 @@ class MainTask(BaseTask):
     def _select_task(self) -> Dict[str, callable]:
         tasks = {
             "ვაქცინაცია": VaccinationTask,
+            "ჯავშნის შემოწმება": VaccinationCheckTask,
             "ლოტო": LottoTask,
         }
         answers = prompt(

@@ -24,7 +24,7 @@ class BookingAPIService(BaseAPIService):
     Service for working with the booking.moh.gov.ge's API.
     """
 
-    url_template = "https://booking.moh.gov.ge/$app/API/api/$path"
+    url_template = "https://booking.moh.gov.ge/$app/API/api$path"
     security_numbers = []
 
     def _make_request(self, method: str, **kwargs) -> Response:
@@ -154,4 +154,27 @@ class BookingAPIService(BaseAPIService):
                 "regionID": region,
                 "serviceID": service,
             },
+        )
+
+    def search_booking(
+        self,
+        personal_number: str,
+        booking_number: str,
+        app: str = "def",
+    ) -> Dict[str, any]:
+        """
+        Make GET request to the
+        "/Booking/SearchBookingByNumber/{personal_number}/{booking_number}" endpoint.
+
+        :param str personal_number: Personal Number.
+        :param str booking_number: Booking Number.
+        :param app: Application.
+        :return: Endpoint response.
+        """
+
+        return self._get(
+            url={
+                "app": app,
+                "path": f"/Booking/SearchBookingByNumber/{booking_number}/{personal_number}",
+            }
         )

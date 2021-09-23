@@ -17,7 +17,7 @@ class LottoAPIService(BaseAPIService):
     Service for working with the stopcov-api.lotto.ge's API.
     """
 
-    url_template = "https://stopcov-api.lotto.ge/$path"
+    url_template = "https://stopcov-api.lotto.ge$path"
 
     def check_winning(self, personal_number: str) -> bool:
         """
@@ -27,4 +27,4 @@ class LottoAPIService(BaseAPIService):
         :return: Winning status.
         """
 
-        return self._get(url={"path": f"Public/Winnings/{personal_number}"})
+        return self._get(url={"path": f"/Public/Winnings/{personal_number}"})

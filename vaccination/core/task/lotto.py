@@ -54,7 +54,7 @@ class LottoTask(BaseTask):
 
         return {"personal_number": personal_number}
 
-    def _print_result(self, personal_number) -> Union[Dict, None]:
+    def _print_result(self, personal_number: str) -> Union[Dict, None]:
         winning = self.api_service.check_winning(personal_number)
 
         if winning:
